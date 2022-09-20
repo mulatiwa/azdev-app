@@ -1,0 +1,128 @@
+#Output Object types
+  #Models
+type User {
+  id: ID!
+  createdAt: String!
+  name: String
+  username: String!
+  taskList: [Task!]!
+}
+
+type UserError {
+  message: String!
+}
+
+type UserPayload {
+  errors: [UserError]!
+  user: User
+  authToken: String
+}
+
+type UserDeletePayload {
+  errors: [UserError]!
+  deletedUserId: ID
+}
+
+type Task implements SearchResultItem {
+  id: ID!
+  createdAt: String!
+  content: String!
+  approachCount: Int!
+  author: User!
+  approachList: [Approach!]!
+  tags: [String!]!
+}
+
+type TaskPayload {
+  errors: [UserError]!
+  task: Task
+}
+
+type Approach implements SearchResultItem{
+  id: ID!
+  createdAt: String!
+  content: String!
+  task: Task!
+  voteCount: Int!
+  author: User!
+  detailList: [ApproachDetail!]!
+}
+
+type ApproachDetail {
+  content: String!
+  category: ApproachDetailCategory!
+}
+  #Unions
+  #interfaces
+interface SearchResultItem {
+  id: ID!
+  content: string!
+}
+
+  #Enum 
+  enum ApproachDetailCategory {
+    NOTE
+    EXPLANATION
+    WARNING
+  }
+
+  # Input Objects
+input UserInput {
+  username: string!
+  password: string!
+  firstName: string
+  lastName: string
+}
+
+input AuthInput {
+  username: String!
+  password: String!
+}
+
+input TaskInput {
+  content: String!
+  tags: [String!]!
+  isPrivate: Boolean!
+}
+
+input ApproachDetailInput {
+  content: String!
+  category: ApproachDetailCategory!
+}
+
+input ApproachInput {
+  content: String!
+  detailList: [ApproachDetailInput]!
+}
+
+input ApproachVoteInput {
+  up: Boolean!
+}
+
+type ApproachPayload {
+  errors: [UserError!]!
+  approach: Approach
+}
+  
+  # Operations
+type Query{
+  taskMainList: [Task!]
+  search(term: String!): [TaskOrApproach!]
+  taskInfo(id: ID!): Task
+  viewer: User
+  # Other Query root fields
+}
+
+type Mutation{
+  userCreate(input: UserInput!): UserPayload!
+  userLogin(input: AuthInput!): UserPayload!
+  UserDelete: UserDeletePayload!
+  taskCreate(input: TaskInput!): TaskPayload!
+  approachCreate(taskId: ID!, input: ApproachInput!): ApproachPayload!
+  approachVote(approachId: ID!, input: ApproachVoteInput!): ApproachPayload!
+}
+
+type Subscription {
+  voteChanged(taskId: ID!): Approach!
+  taskMainListChanged: [Task!]
+}
